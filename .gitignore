@@ -3,3 +3,4 @@ haskell2019.cabal
 *~
 # Project exclude paths
 /out/
+.idea
