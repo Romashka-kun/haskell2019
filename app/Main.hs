@@ -46,3 +46,14 @@ main = do
   print(quickSort [3,2,5,8,9,4,1,5,7])
   
   print(vectorSum (Point 2 3) (Point 1 3))
+  
+  print(sum1 (Cons 3 (Cons 5 (Cons 1 Empty))))
+  print(sum1 Empty)
+  
+  print(length1 (Cons 3 (Cons 5 (Cons 1 Empty))))
+  print(length1 Empty)
+  
+  print(reverse1 (Cons 3 (Cons 5 (Cons 1 (Cons 10 Empty)))))
+  print(reverse1 Empty)
+  
+  print(mergeSort [6, 3, 1, 9, 5, 4, 7, 8, 2])

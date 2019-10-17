@@ -82,7 +82,18 @@ area (Rect w h) = w * h
 area (Triangle a) = a * a * sqrt 3 / 4
 
 
-data MyList = Empty | Cons Int MyList deriving Show 
+data MyList = Empty | Cons Int MyList deriving Show
 
 sum1 :: MyList -> Int
-sum1 list = 3
+sum1 Empty = 0
+sum1 (Cons x l) = x + sum1 l
+
+length1 :: MyList -> Int
+length1 l = helper l 0
+            where helper Empty acc = acc
+                  helper (Cons x l) acc = helper l (acc + 1)
+
+reverse1 :: MyList -> MyList
+reverse1 l = helper l Empty
+             where helper Empty acc = acc
+                   helper (Cons x l) acc = helper l (Cons x acc) 

@@ -10,5 +10,17 @@ exponent1 x n = answer x n 1
 quickSort :: [Int] -> [Int]
 quickSort [] = []
 quickSort (x:l) = partition x l
-                   where partition :: Int -> [Int] -> [Int]
-                         partition v l = quickSort (filter (< v) l) ++ (v : filter (== v) l) ++ quickSort (filter (> v) l)
+                   where partition v l = quickSort (filter (< v) l) ++ (v : filter (== v) l) ++ quickSort (filter (> v) l)
+
+mergeSort :: [Int] -> [Int]
+mergeSort [x] = [x]
+mergeSort l = merge (mergeSort part1) (mergeSort part2) [] where
+                                                          (part1, part2) = splitList l
+                                                          
+                                                          splitList l = splitAt ((length l + 1) `div` 2) l
+                                                    
+                                                          merge [] b l = reverse l ++ b
+                                                          merge a [] l = reverse l ++ a
+                                                          merge (x:a) (y:b) l
+                                                              | x < y = merge a (y:b) (x:l)
+                                                              | otherwise = merge (x:a) b (y:l)
