@@ -45,8 +45,10 @@ module Lec4 where
  Bill [("телефон", 100000), ("мороженое", 1000)]  --значение типа Bill
 
 -}
+newtype Bill =
+  Bill [(String, Int)]
+  deriving (Show)
 
-newtype Bill = Bill [(String, Int)] deriving Show
 total :: Bill -> Int
 total (Bill bill) = sum (map snd bill)
 
@@ -57,15 +59,20 @@ repeatTwice :: [a] -> [a]
 repeatTwice = concatMap (\x -> [x, x])
 
 filterCM :: (a -> Bool) -> [a] -> [a]
-filterCM f = concatMap (\x -> if f x then [x] else [])
+filterCM f =
+  concatMap
+    (\x ->
+       if f x
+         then [x]
+         else [])
 
 mapCM :: (a -> b) -> [a] -> [b]
 mapCM f = concatMap (\x -> [f x])
 
-
 -- Алгебраические типы данных --
-
-data Point = Point Int Int deriving Show
+data Point =
+  Point Int Int
+  deriving (Show)
 
 vectorSum :: Point -> Point -> Point
 vectorSum (Point x1 y1) (Point x2 y2) = Point (x1 + x2) (y1 + y2)
@@ -73,27 +80,34 @@ vectorSum (Point x1 y1) (Point x2 y2) = Point (x1 + x2) (y1 + y2)
 vectorLength :: Point -> Double
 vectorLength (Point x y) = sqrt $ fromIntegral (x * x + y * y)
 
-
-data Figure = Circle Double | Rect Double Double | Triangle Double deriving Show
+data Figure
+  = Circle Double
+  | Rect Double Double
+  | Triangle Double
+  deriving (Show)
 
 area :: Figure -> Double
-area (Circle r) = r * r * pi
-area (Rect w h) = w * h
+area (Circle r)   = r * r * pi
+area (Rect w h)   = w * h
 area (Triangle a) = a * a * sqrt 3 / 4
 
-
-data MyList = Empty | Cons Int MyList deriving Show
+data MyList
+  = Empty
+  | Cons Int MyList
+  deriving (Show)
 
 sum1 :: MyList -> Int
-sum1 Empty = 0
+sum1 Empty      = 0
 sum1 (Cons x l) = x + sum1 l
 
 length1 :: MyList -> Int
 length1 l = helper l 0
-            where helper Empty acc = acc
-                  helper (Cons x l) acc = helper l (acc + 1)
+  where
+    helper Empty acc      = acc
+    helper (Cons x l) acc = helper l (acc + 1)
 
 reverse1 :: MyList -> MyList
 reverse1 l = helper l Empty
-             where helper Empty acc = acc
-                   helper (Cons x l) acc = helper l (Cons x acc) 
+  where
+    helper Empty acc      = acc
+    helper (Cons x l) acc = helper l (Cons x acc)
