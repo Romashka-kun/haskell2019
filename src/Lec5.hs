@@ -37,21 +37,21 @@ data MyList a
 -- сделаем свою функцию rev, она переворачивает объекты
 -- создадим класс типов Reversible. Некоторые типы будут иметь этот класс, т.е. для них можно будет вызывать функцию rev
 --
---class Reversible a where
---rev :: a -> a
+-- class Reversible a where
+--   rev :: a -> a
 -- теперь напишем rev для каких-нибудь типов
 -- Int будет переворачиваемым
---instance Reversible Int
---rev :: Int -> Int
---rev = list2num . reverse . num2list
---  where
---    list2num = foldl (\a x -> 10 * a + x) 0
---    num2list 0 = []
---    num2list n = (n `mod` 10) : num2list (n `div` 10)
---    num2list n = h n []
---      where
---        h 0 l = l
---        h n l = h (n `div` 10) (n `mod` 10 : l)
+-- instance Reversible Int
+--   rev :: Int -> Int
+--   rev = list2num . reverse . num2list
+--     where
+--       list2num = foldl (\a x -> 10 * a + x) 0
+--       num2list 0 = []
+--       num2list n = (n `mod` 10) : num2list (n `div` 10)
+--       num2list n = h n []
+--         where
+--           h 0 l = l
+--           h n l = h (n `div` 10) (n `mod` 10 : l)
 -- 1) rev = map rev . reverse
 -- 2) rev l = map rev (reverse l)
 -- rev (42::Int)
@@ -114,3 +114,32 @@ safeGet i l =
       if i == 0
         then Just x
         else safeGet (i - 1) l
+
+-- Классы типов
+class Reversible a where
+  rev :: a -> a
+
+instance Reversible Int where
+  rev = reverseInt 0
+    where
+      reverseInt acc 0 = acc
+      reverseInt acc x = reverseInt (acc * 10 + x `mod` 10) (x `div` 10)
+
+instance Reversible [a] where
+  rev = reverse
+
+-- Point
+data Point =
+  Point Int Int
+
+instance Reversible Point where
+  rev (Point x y) = Point (rev y) (rev x)
+
+instance Show Point where
+  show (Point x y) = show x ++ ";" ++ show y
+
+instance Eq Point where
+  (==) (Point x1 y1) (Point x2 y2) = x1 == x2 && y1 == y2
+
+instance Ord Point where
+  compare (Point x1 y1) (Point x2 y2) = compare (sqrt (fromIntegral (x1 * x1 + y1 * y1))) (sqrt (fromIntegral (x2 * x2 + y2 * y2)))

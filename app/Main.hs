@@ -64,6 +64,16 @@ main = do
 --  print (evenToZero [1, 2, 3, 4, 5])
 --  print (deleteEvenIndexes [1, 2, 3, 4, 5])
 --  print (separateDigits [10, 44, 31, 93])
+  print (safePop [1, 2, 3, 4, 5])
+  print (safeGet 1 [1, 2, 3, 4, 5])
   
-  print (safePop [1,2,3,4,5])
-  print (safeGet 1 [1,2,3,4,5])
+  print (rev 42 :: Int)
+  print (rev [1, 2, 3, 4, 5])
+  print (rev ["a", "b", "c", "d"])
+  
+  print (rev (Lec5.Point 24 13))
+  print (Lec5.Point 24 13 == Lec5.Point 24 13)
+  print (Lec5.Point 24 13 == Lec5.Point 2 3)
+  
+  print (min (Lec5.Point 24 13) (Lec5.Point 2 3))
+  print (maximum [Lec5.Point 24 13, Lec5.Point 2 3, Lec5.Point 6 84, Lec5.Point 24 13])
