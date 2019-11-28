@@ -142,4 +142,4 @@ instance Eq Point where
   (==) (Point x1 y1) (Point x2 y2) = x1 == x2 && y1 == y2
 
 instance Ord Point where
-  compare (Point x1 y1) (Point x2 y2) = compare (sqrt (fromIntegral (x1 * x1 + y1 * y1))) (sqrt (fromIntegral (x2 * x2 + y2 * y2)))
+  compare (Point x1 y1) (Point x2 y2) = compare (x1 * x1 + y1 * y1) (x2 * x2 + y2 * y2)
