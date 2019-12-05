@@ -43,29 +43,39 @@ module Lec6 where
 -- Tree
 data Tree a
   = EmptyTree
-  | Node a (Tree a) (Tree a)
+  | TreeNode a (Tree a) (Tree a)
 
 instance (Show a) => Show (Tree a) where
   show tree = drawTree tree "  "
     where
       drawTree EmptyTree _ = "EmptyTree"
-      drawTree (Node val b1 b2) indent =
+      drawTree (TreeNode val b1 b2) indent =
         show val ++ "\n" ++ indent ++ drawTree b1 (indent ++ "  ") ++ "\n" ++ indent ++ drawTree b2 (indent ++ "  ")
 
 map' :: (a -> b) -> Tree a -> Tree b
-map' _ EmptyTree        = EmptyTree
-map' f (Node val b1 b2) = Node (f val) (map' f b1) (map' f b2)
+map' _ EmptyTree            = EmptyTree
+map' f (TreeNode val b1 b2) = TreeNode (f val) (map' f b1) (map' f b2)
 
 appendTree :: Ord a => a -> Tree a -> Tree a
-appendTree newNode EmptyTree = Node newNode EmptyTree EmptyTree
-appendTree newNode (Node val b1 b2)
-  | newNode > val = Node val b1 (appendTree newNode b2)
-  | otherwise = Node val (appendTree newNode b1) b2
---min' :: Ord a => Tree a -> a
---min' (Tree node b1 b2)
---    | node < (min b1 b2) = node
---    | otherwise = min b1 b2
---  where
---    findMin min t1 t2 =
+appendTree newNode EmptyTree = TreeNode newNode EmptyTree EmptyTree
+appendTree newNode (TreeNode val b1 b2)
+  | newNode > val = TreeNode val b1 (appendTree newNode b2)
+  | otherwise = TreeNode val (appendTree newNode b1) b2
+
 --foldTree :: b -> (a -> b -> b -> b) -> Tree a -> b
 --   EmptyTree^     ^Node
+data LeafTree a
+  = Leaf a
+  | InnerNode (LeafTree a) (LeafTree a)
+
+instance (Show a) => Show (LeafTree a) where
+  show tree = drawTree tree "  "
+    where
+      drawTree (Leaf l) _ = show l
+      drawTree (InnerNode b1 b2) indent =
+        "○" ++ "\n" ++ indent ++ drawTree b1 (indent ++ "  ") ++ "\n" ++ indent ++ drawTree b2 (indent ++ "  ")
+
+
+instance Functor Tree where
+  fmap f (TreeNode val b1 b2) = TreeNode (f val) (fmap b1) (fmap b2) 
+  fmap _ EmptyTree = EmptyTree 

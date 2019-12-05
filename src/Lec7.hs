@@ -1,5 +1,4 @@
 module Lec7 where
-
 -- Функторы
 --
 -- Функция map была бы логична не только для списков. Как бы она работала для Maybe?
@@ -110,8 +109,182 @@ module Lec7 where
 -- понятно из требований к аппликативному функтору, см. дальше.
 -- Для Maybe: pure x = Just x, для списка pure x = [x]
 --
--- Допустим, хотим сложить значения в двух maybe. Или в двух списках сложить попарно значения. Как это будет написано?
+-- Допустим, хотим сложить значения в двух Maybe. Или в двух списках сложить попарно значения. Как это будет написано?
 -- x1 = Just 110
 -- x2 = Just 654
 -- надо сложить. Сначала давайте получим Just (+110), потом применим её к Just 654:
--- (+)
+-- (+) <*> x1 <*> x2
+--
+-- Аппликативные функторы должны уметь делать не только <*>, но и функцию pure, которая вводит обычное значение в функтор.
+-- 'pure 42' в типе Maybe это 'Just 42' . 'pure 42' в типе списка: [42]
+--
+-- Правила для функторов:
+--   pure id <*> v = v
+--   pure f <*> pure x = pure (f x)
+--   и др.
+--
+--
+-- #Монады
+-- Вычисления с Maybe - это вычисления, в которых может не получиться результата. Если мы делаем последовательность
+-- вычислений, в которой в какой-то момент результата не получилось, то и дальше считаем, что результата нет.
+-- mSqrt :: Double -> Maybe Double
+-- mSqrt x | x < 0 = Nothing
+--         | otherwise = Just $ sqrt x
+-- [хотим вычислить (sqrt(x) + 1) / 2]
+-- eval x = let sx = mSqrt x
+--              y = (+1) <$> sx
+--            in (/2) <$> y
+-- eval 9 -> Just 2.0
+-- eval (-9) -> Nothing
+--
+-- sqrt(x) + sqrt(y) + 1
+-- eval2 x y = let sx = mSqrt x
+--                 sy = mSqrt y
+--                 sq_plus_sq = Just (+) <*> sx <*> sy -- liftA2 (+) sx sy
+--                in
+--                 (+1) <$> sq_plus_sq
+-- eval2 9 16 -> Just 8.0
+-- eval2 (-9) 16 -> Nothing
+--
+-- sqrt(sqrt(x) - 3)
+-- eval3 x = let sx = mSqrt x
+--               sx_3 = (\t -> t - 3) <$> sx
+--               -- ?? не получается сделать ни с <*>, ни с <$>
+--               -- есть Just y и есть mSqrt :: Double -> Maybe Double
+--               z = case sx_3 of
+--                      Just n -> mSqrt n
+--                      Nothing -> Nothing
+--              in
+--               z
+-- eval3 100 -> Just ...
+-- eval3 (-100) -> Nothing
+-- eval3 4 -> Nothing
+--
+-- Хочется вспомогательную функцию типа <*> и <$>, чтобы она имела такой заголовок
+-- bind :: Maybe a -> (a -> Maybe b) -> Maybe b
+--
+-- Если подумать, то
+-- 1) fmap - частный случай этой функции. Сравним
+--    bind :: Maybe a -> (a -> Maybe b) -> Maybe b
+--    fmap :: Maybe a -> (a -> b) -> Maybe b
+--    fmap f t = bind t (\x -> pure $ f x) или fmap f t = bind t (pure . f)
+-- 2) <*> - тоже частный случай. Попробуйте её сам выразить через bind
+--
+-- Реализуем bind для Maybe:
+-- maybeBind :: Maybe a -> (a -> Maybe b) -> Maybe b
+-- maybeBind Nothing _ = Nothing
+-- maybeBind (Just x) f = f x
+--
+-- снова sqrt(sqrt(x) - 3)
+-- eval3 x = let sx = mSqrt(x)
+--               sx_3 = maybeBind sx (\t -> Just (t - 3))
+--              in
+--               maybeBind sx_3 mSqrt
+-- eval3 100 -> Just ...
+-- eval3 (-100) -> Nothing
+-- eval3 4 -> Nothing
+--
+-- короткий синтаксис
+-- eval3 x = do
+--             sx <- mSqrt x
+--             sx_3 <- sx - 3
+--             mSqrt sx_3
+-- ответы те же
+--
+-- Давайте остановимся на одной вспомогательной функции
+-- maybeBind :: Maybe a -> (a -> Maybe b) -> Maybe b
+-- Функции даётся значение, очередной шаг вычисления, она возвращает новое значение.
+-- maybeBind :: Maybe a -> (a -> Maybe b) -> Maybe b
+-- maybeBind Nothing _ = Nothing
+-- maybeBind (Just x) f = f x
+--
+-- взятие корня
+-- mSqrt :: Double -> Maybe Double
+-- mSqrt x | x < 0 = Nothing
+--         | otherwise = Just $ sqrt x
+-- sqrt(sqrt(x) - 3)
+--
+-- eval4 :: Double -> Maybe Double
+-- maybeBind (Just x) mSqrt - это sqrt(x) внутри maybe
+-- eval4 x = maybeBind (mSqrt x) (\a -> mSqrt (a - 3))
+--
+-- Эта программа похожа на последловательность шагов:
+-- 1. mSqrt
+-- 2. \a -> mSqrt (a - 3)
+--
+-- Посчитаем теперь sqrt x + sqrt y + 1
+-- Шаги:
+-- 1. sqrt x
+-- 2. sqrt y
+-- 3. sqrt x + sqrt y + 1
+--
+-- eval5 :: Double -> Double -> Maybe Double
+-- eval5 x y = maybeBind (mSqrt x) (\a -> maybeBind (mSqrt y) (\b -> Just (a + b + 1)))
+--
+-- maybeBind - это функция '>>=', которая существует для Maybe и других типов.
+-- eval5 :: Double -> Double -> Maybe Double
+-- eval5 x y = (mSqrt x) >>= (\a -> (mSqrt y) >>= (\b -> Just (a + b + 1)))
+--
+-- для подообной записи есть do-нотация
+-- eval5 :: Double -> Double -> Maybe Double
+-- eval5 x y = do
+--              a <- mSqrt x
+--              b <- mSqrt y
+--              return (a + b + 1)
+-- Получился "императивный" код. return для Maybe это Just.
+-- Перепишем теперь eval4
+-- eval4 :: Double -> Maybe Double
+-- eval4 x = (mSqrt x) >>= (\a -> mSqrt (a - 3))
+-- или в do-нотации
+-- eval4 x = do
+--             a <- mSqrt x
+--             mSqrt (a - 3) -- сразу возвращает Maybe
+--
+-- Комплексное число 1 :+ 2 это 1 + 2i
+-- import Data.Complex
+-- lSqrt :: Complex Double -> [Complex Double]
+-- lSqrt x = [sqrt x, -sqrt x]
+--
+-- eval5 :: Complex Double -> Complex Double -> [Complex Double]
+-- eval5 x y = do
+--              a <- lSqrt x
+--              b <- lSqrt y
+--              return (a + b + 1)
+--
+-- Монада в хаскеле:
+-- class Applicative a => Monad (m a) where
+-- (>>=) :: m a -> (a -> m b) -> m b
+-- return :: a -> m a -- превращает обычное значение в значение в монаде
+-- (>>) :: m a -> m b -> m b
+-- (>>) x y = x >>= (\_ -> y)
+--
+-- Пример монады. Вычисления с журналированием действий.
+-- data Log a = Log a [String] -- храним значение и список сообщений
+-- Будем пользоваться функциями, которые при вычислениях могут выдать несколько сообщений:
+-- add1 :: Int -> Log Int
+-- add1 x = Log (x + 1) ["я добавил один"]
+--
+-- mul2 :: Int -> Log Int
+-- mul2 x = Log (2 * x) ["Я умножил на 2", "было тяжело"]
+--
+-- Скажем, что Log это монада и объясним, как комбинировать вычисления.
+-- instance Functor Log where
+-- ...
+-- instance Applicative Log where
+-- ...
+--
+-- instance Monad Log where
+-- (>>=) :: Log a -> (a -> Log b) -> Log b
+-- (Log x messages) >>= f =
+--   let (Log y newMessages) = f x
+--    in Log y (messages ++ newMessages)
+--
+-- return :: a -> Log a
+-- return x = Log x []
+--
+-- 2 + x + 1 через функции add1 и mul2
+-- eval6 :: Int -> Log Int
+-- eval6 x = do
+--            a <- mul2 x
+--            add1 a -- или b <- add1 a; return b
+-- eval6 10 -- должен вернуть 21 и журнал ["умножила на 2", "добавила 1"]

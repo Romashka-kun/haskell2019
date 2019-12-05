@@ -78,17 +78,18 @@ main = do
 --  print (min (Lec5.Point 24 13) (Lec5.Point 2 3))
 --  print (maximum [Lec5.Point 24 13, Lec5.Point 2 3, Lec5.Point 6 84, Lec5.Point 24 13])
 
-  print (Node 5 (Node 3 EmptyTree EmptyTree) (Node 8 (Node 6 EmptyTree EmptyTree) (Node 10 EmptyTree EmptyTree)))
+  print (TreeNode 5 (TreeNode 3 EmptyTree EmptyTree) (TreeNode 8 (TreeNode 6 EmptyTree EmptyTree) (TreeNode 10 EmptyTree EmptyTree)))
   print
     (map'
        (++ "!")
-       (Node "5"
-          (Node "3" EmptyTree EmptyTree)
-          (Node "8" (Node "6" EmptyTree EmptyTree) (Node "10" EmptyTree EmptyTree))))
+       (TreeNode "5"
+          (TreeNode "3" EmptyTree EmptyTree)
+          (TreeNode "8" (TreeNode "6" EmptyTree EmptyTree) (TreeNode "10" EmptyTree EmptyTree))))
           
   print 
     (appendTree 
         7
-        (Node 5 (Node 3 EmptyTree EmptyTree) (Node 8 (Node 6 EmptyTree EmptyTree) (Node 10 EmptyTree EmptyTree))))
+        (TreeNode 5 (TreeNode 3 EmptyTree EmptyTree) (TreeNode 8 (TreeNode 6 EmptyTree EmptyTree) (TreeNode 10 EmptyTree EmptyTree))))
 
---  print (min' (Tree 5 (Tree 3 EmptyTree EmptyTree) (Tree 8 (Tree 6 EmptyTree EmptyTree) (Tree 1 EmptyTree EmptyTree))))
+
+  print (InnerNode (InnerNode (InnerNode (Leaf 4) (Leaf 10)) (Leaf 8)) (Leaf 20))
