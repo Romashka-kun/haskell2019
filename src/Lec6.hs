@@ -49,21 +49,29 @@ instance (Show a) => Show (Tree a) where
   show tree = drawTree tree "  "
     where
       drawTree EmptyTree _ = "EmptyTree"
-      drawTree (TreeNode val b1 b2) indent =
-        show val ++ "\n" ++ indent ++ drawTree b1 (indent ++ "  ") ++ "\n" ++ indent ++ drawTree b2 (indent ++ "  ")
+      drawTree (TreeNode val l r) indent =
+        show val ++ "\n" ++ indent ++ drawTree l (indent ++ "  ") ++ "\n" ++ indent ++ drawTree r (indent ++ "  ")
 
-map' :: (a -> b) -> Tree a -> Tree b
-map' _ EmptyTree            = EmptyTree
-map' f (TreeNode val b1 b2) = TreeNode (f val) (map' f b1) (map' f b2)
+instance Functor Tree where
+  fmap f (TreeNode val l r) = TreeNode (f val) (fmap f l) (fmap f r)
+  fmap _ EmptyTree          = EmptyTree
 
 appendTree :: Ord a => a -> Tree a -> Tree a
 appendTree newNode EmptyTree = TreeNode newNode EmptyTree EmptyTree
-appendTree newNode (TreeNode val b1 b2)
-  | newNode > val = TreeNode val b1 (appendTree newNode b2)
-  | otherwise = TreeNode val (appendTree newNode b1) b2
+appendTree newNode (TreeNode val l r)
+  | newNode > val = TreeNode val l (appendTree newNode r)
+  | otherwise = TreeNode val (appendTree newNode l) r
 
---foldTree :: b -> (a -> b -> b -> b) -> Tree a -> b
---   EmptyTree^     ^Node
+min' :: Ord a => Tree a -> a
+min' (TreeNode val EmptyTree _) = val
+min' (TreeNode val l _)         = min' l
+
+deleteMin :: Tree a -> Tree a
+-- deleteMin EmptyTree = EmptyTree
+deleteMin (TreeNode val EmptyTree r) = r
+deleteMin (TreeNode val l r)         = TreeNode val (deleteMin l) r
+
+-- LeafTree
 data LeafTree a
   = Leaf a
   | InnerNode (LeafTree a) (LeafTree a)
@@ -72,10 +80,23 @@ instance (Show a) => Show (LeafTree a) where
   show tree = drawTree tree "  "
     where
       drawTree (Leaf l) _ = show l
-      drawTree (InnerNode b1 b2) indent =
-        "○" ++ "\n" ++ indent ++ drawTree b1 (indent ++ "  ") ++ "\n" ++ indent ++ drawTree b2 (indent ++ "  ")
+      drawTree (InnerNode l r) indent =
+        "○" ++ "\n" ++ indent ++ drawTree l (indent ++ "  ") ++ "\n" ++ indent ++ drawTree r (indent ++ "  ")
 
+instance Functor LeafTree where
+  fmap f (InnerNode l r) = InnerNode (fmap f l) (fmap f r)
+  fmap f (Leaf val)      = Leaf (f val)
 
-instance Functor Tree where
-  fmap f (TreeNode val b1 b2) = TreeNode (f val) (fmap b1) (fmap b2) 
-  fmap _ EmptyTree = EmptyTree 
+instance Applicative LeafTree where
+  pure = Leaf
+  ftree <*> InnerNode l r = InnerNode (ftree <*> l) (ftree <*> r)
+  ftree <*> Leaf val = fmap ($ val) ftree
+  
+-- ├──
+-- │   └──
+sumMaybeInt :: Maybe Int -> Maybe Int -> Maybe Int
+--sumMaybeInt a b = pure (+) <*> a <*> b
+sumMaybeInt a b = (+) <$> a <*> b
+
+sumList :: [Int] -> [Int] -> [Int]
+sumList a b = pure (+) <*> a <*> b

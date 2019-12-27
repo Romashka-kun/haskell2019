@@ -5,6 +5,7 @@ import           Lec3
 import           Lec4
 import           Lec5
 import           Lec6
+import           Lec7
 import           Lib
 
 main :: IO ()
@@ -77,19 +78,30 @@ main = do
 --
 --  print (min (Lec5.Point 24 13) (Lec5.Point 2 3))
 --  print (maximum [Lec5.Point 24 13, Lec5.Point 2 3, Lec5.Point 6 84, Lec5.Point 24 13])
-
-  print (TreeNode 5 (TreeNode 3 EmptyTree EmptyTree) (TreeNode 8 (TreeNode 6 EmptyTree EmptyTree) (TreeNode 10 EmptyTree EmptyTree)))
-  print
-    (map'
-       (++ "!")
-       (TreeNode "5"
-          (TreeNode "3" EmptyTree EmptyTree)
-          (TreeNode "8" (TreeNode "6" EmptyTree EmptyTree) (TreeNode "10" EmptyTree EmptyTree))))
-          
-  print 
-    (appendTree 
-        7
-        (TreeNode 5 (TreeNode 3 EmptyTree EmptyTree) (TreeNode 8 (TreeNode 6 EmptyTree EmptyTree) (TreeNode 10 EmptyTree EmptyTree))))
-
-
-  print (InnerNode (InnerNode (InnerNode (Leaf 4) (Leaf 10)) (Leaf 8)) (Leaf 20))
+  let tree =
+        TreeNode
+          5
+          (TreeNode 3 EmptyTree EmptyTree)
+          (TreeNode 8 (TreeNode 7 EmptyTree EmptyTree) (TreeNode 10 EmptyTree EmptyTree))
+  print tree
+  print $ fmap (+ 0.27) tree
+  print $ appendTree 6 tree
+  print $ min' tree
+  print $ deleteMin tree
+  print "*****************************************"
+  let leafTree = InnerNode (InnerNode (Leaf 4) (Leaf 8)) (Leaf 20)
+  print leafTree
+  print $ fmap (+ 0.5) leafTree
+  print $ Leaf (+ 0.5) <*> leafTree
+  print $ sumMaybeInt (Just 4) (Just 5)
+  print $ sumList [1, 2, 3] [3, 2, 1]
+  print "*****************************************"
+  print (eval6 10)
+--  putStrLn (concat val) where (Log v val) = eval6 10
+--  res <- sumIO
+--  print res
+  print $ InnerNode (Leaf (+ 0.21)) (InnerNode (Leaf (+ 0.4)) (Leaf (+ 0.15))) <*> leafTree
+  print "****************************************************"
+  print $ InnerNode (Leaf (+ 0.21)) (InnerNode (Leaf (+ 0.4)) (Leaf (+ 0.15))) <*> Leaf 5
+  print "****************************************************"
+  print $ Leaf (+ 1) <*> leafTree

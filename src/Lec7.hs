@@ -1,4 +1,5 @@
 module Lec7 where
+
 -- Функторы
 --
 -- Функция map была бы логична не только для списков. Как бы она работала для Maybe?
@@ -53,7 +54,7 @@ module Lec7 where
 --
 -- Это работает, потому что в Haskell есть класс типов Functor - функтор. Он определен так:
 -- class Functor f where
---   fmap :: (a -> b) f a -> f b
+--   fmap :: (a -> b) -> f a -> f b
 --
 -- У него есть реализации, например, примерно так выглядит реализация для Maybe.
 -- instance Functor Maybe where
@@ -259,32 +260,54 @@ module Lec7 where
 -- (>>) x y = x >>= (\_ -> y)
 --
 -- Пример монады. Вычисления с журналированием действий.
--- data Log a = Log a [String] -- храним значение и список сообщений
+data Log a =
+  Log a [String]
+  deriving (Show) -- храним значение и список сообщений
+
 -- Будем пользоваться функциями, которые при вычислениях могут выдать несколько сообщений:
--- add1 :: Int -> Log Int
--- add1 x = Log (x + 1) ["я добавил один"]
+add1 :: Int -> Log Int
+add1 x = Log (x + 1) ["added 1"]
+
 --
--- mul2 :: Int -> Log Int
--- mul2 x = Log (2 * x) ["Я умножил на 2", "было тяжело"]
+mul2 :: Int -> Log Int
+mul2 x = Log (2 * x) ["multiplied by 2", "that was hard"]
+
 --
 -- Скажем, что Log это монада и объясним, как комбинировать вычисления.
--- instance Functor Log where
--- ...
--- instance Applicative Log where
--- ...
+instance Functor Log where
+  fmap f (Log v msg) = Log (f v) msg
+
 --
--- instance Monad Log where
+instance Applicative Log where
+  pure x = Log x []
+  Log f newMsg <*> Log v msg = Log (f v) (msg ++ newMsg)
+
+--
+instance Monad Log where
 -- (>>=) :: Log a -> (a -> Log b) -> Log b
--- (Log x messages) >>= f =
---   let (Log y newMessages) = f x
---    in Log y (messages ++ newMessages)
---
--- return :: a -> Log a
--- return x = Log x []
+  (Log x messages) >>= f =
+    let (Log y newMessages) = f x
+      in Log y (messages ++ newMessages)
+
+  -- return :: a -> Log a
+  return x = Log x []
+
 --
 -- 2 + x + 1 через функции add1 и mul2
--- eval6 :: Int -> Log Int
--- eval6 x = do
---            a <- mul2 x
---            add1 a -- или b <- add1 a; return b
+eval6 :: Int -> Log Int
+eval6 x = do
+  a <- mul2 x
+  add1 a -- или b <- add1 a; return b
 -- eval6 10 -- должен вернуть 21 и журнал ["умножила на 2", "добавила 1"]
+
+
+--sumIO :: IO ()
+--sumIO = do
+--  a <- getLine
+--  b <- getLine
+--  print (read a + read b)
+sumIO :: IO Int
+sumIO = do
+    a <- getLine
+    b <- getLine
+    return (read a + read b)
